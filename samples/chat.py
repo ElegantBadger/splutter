@@ -10,7 +10,7 @@ from splutter import Border
 class InputView(View):
     def __init__(self, width, height):
         super().__init__()
-        self._input = TextField(1, 1, width=width, text='')
+        self._input = TextField(1, 1, width=width, max_length=140, text='')
         self._border = Border(0, 0, width + 2, 2)
         self.add_component('input', self._input)
         self.add_component('border', self._border)
@@ -26,7 +26,7 @@ class ChatController(Controller):
         self.add_view(self.TEXT_INPUT_NAME, InputView(12, 2))
         self.active_view = self.TEXT_INPUT_NAME
 
-    def handle_event(self, evnet, window):
+    def handle_event(self, event, window):
         pass
 
 

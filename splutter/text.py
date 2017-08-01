@@ -4,14 +4,17 @@ from splutter.keys import KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_UP, KEY_ENTER, \
 
 
 class TextField(Component):
-    def __init__(self, x, y, width=12, text='', multiline=False,
+    def __init__(self, x, y, width=12, max_length=None, text='',
                  bind_to=Component.BIND_TOP_LEFT):
         super().__init__(x, y, bind_to=bind_to)
         self._max_width = width
+        if max_length is None:
+            max_length = width
+        self._max_length = max_length
         self._x_offset = len(text)
-        self._y_offset = 0
+        self._text_offset = 0
         self._text = text
-        self._multiline = multiline
+        self._left_boundry = 0
 
     @property
     def text(self):
@@ -21,24 +24,24 @@ class TextField(Component):
     def text(self, new_text):
         self._text = new_text
 
-    def _render(self, x, y, window):
-        window.add_string(x, y, self._text)
+    def _text_window(self):
+        """Get the window of the text that should be visible."""
+        start = self._left_boundry
+        end = start + self._max_width
+        return self._text[start:end]
 
-    def _move(self, dx, dy):
-        if self._multiline is False:
-            dy = 0
+    def _render(self, x, y, window):
+        window.add_string(x, y, self._text_window())
+
+    def _move(self, dx):
         self._x_offset = min(max(self._x_offset + dx, 0), len(self._text))
-        self._y_offset = min(max(self._y_offset + dy, 0), 1)
+        self._recalculate_boundary()
 
     def _handle_arrow(self, event, window):
         if event == KEY_LEFT:
-            self._move(-1, 0)
+            self._move(-1)
         elif event == KEY_RIGHT:
-            self._move(1, 0)
-        elif event == KEY_UP:
-            self._move(0, -1)
-        elif event == KEY_DOWN:
-            self._move(0, 1)
+            self._move(1)
 
     def _handle_delete(self):
         if self._x_offset == 0:
@@ -48,16 +51,27 @@ class TextField(Component):
         self._x_offset -= 1
         self._text = new_text
 
+    def _recalculate_boundary(self):
+        if self._cursor_location() >= self._max_width:
+            self._left_boundry += 1
+
+        if self._cursor_location() < 0:
+            self._left_boundry -= 1
+
+        if self._left_boundry < 0:
+            self._left_boundry = 0
+
     def _handle_printable(self, printable, event, window):
+        if len(self._text) > self._max_length:
+            return
         new_text = '%s%s%s' % (self._text[:self._x_offset],
                                printable,
                                self._text[self._x_offset:])
-        if len(new_text) > self._max_width:
-            return
+        self.text = new_text
         self._x_offset += 1
-        self._text = new_text
+        self._recalculate_boundary()
 
-    def handle_enter(self, event, window):
+    def _handle_enter(self):
         """Action to perform when enter is pressed.
 
         This is intended to be overriden by subclasses if they want to do
@@ -77,6 +91,9 @@ class TextField(Component):
             if printable:
                 self._handle_printable(printable, event, window)
 
+    def _cursor_location(self):
+        return self._x_offset - self._left_boundry
+
     def has_focus(self, x, y, window):
-        window.move_cursor(x + self._x_offset + self.x,
-                           y + self._y_offset + self.y)
+        window.move_cursor(x + self._cursor_location() + self.x,
+                           y + self.y)
