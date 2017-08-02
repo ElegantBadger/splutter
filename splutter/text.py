@@ -28,7 +28,7 @@ class TextField(Component):
         """Get the window of the text that should be visible."""
         start = self._left_boundry
         end = start + self._max_width
-        return self._text[start:end]
+        return self._text[start:end+1]
 
     def _render(self, x, y, window):
         window.add_string(x, y, self._text_window())
@@ -50,9 +50,10 @@ class TextField(Component):
                              self._text[self._x_offset:])
         self._x_offset -= 1
         self._text = new_text
+        self._recalculate_boundary()
 
     def _recalculate_boundary(self):
-        if self._cursor_location() >= self._max_width:
+        if self._cursor_location() > self._max_width:
             self._left_boundry += 1
 
         if self._cursor_location() < 0:
