@@ -1,6 +1,6 @@
 from splutter.core import Component
-from splutter.keys import KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_UP, KEY_ENTER, \
-    KEY_DELETE, KEYS_ARROW
+from splutter.keys import KEY_LEFT, KEY_RIGHT, KEY_ENTER,  KEY_DELETE, \
+    KEYS_ARROW
 
 
 class TextField(Component):
@@ -34,8 +34,9 @@ class TextField(Component):
         window.add_string(x, y, self._text_window())
 
     def _move(self, dx):
+        """Move the cursor in a direction."""
         self._x_offset = min(max(self._x_offset + dx, 0), len(self._text))
-        self._recalculate_boundary()
+        self._recalculate_boundary(jump=True)
 
     def _handle_arrow(self, event, window):
         if event == KEY_LEFT:
@@ -52,12 +53,15 @@ class TextField(Component):
         self._text = new_text
         self._recalculate_boundary()
 
-    def _recalculate_boundary(self):
+    def _recalculate_boundary(self, jump=False):
+        """Make sure the cursor is in bounds and the visible."""
+        offset = 1
+        if jump is True:
+            offset = self._max_width // 2
         if self._cursor_location() > self._max_width:
-            self._left_boundry += 1
-
+            self._left_boundry += offset
         if self._cursor_location() < 0:
-            self._left_boundry -= 1
+            self._left_boundry -= offset
 
         if self._left_boundry < 0:
             self._left_boundry = 0
