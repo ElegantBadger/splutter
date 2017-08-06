@@ -9,12 +9,13 @@ WHITE = curses.COLOR_WHITE
 
 
 class Color(object):
-    def __init__(self, fg=WHITE, bg=BLACK):
+    def __init__(self, fg=WHITE, bg=BLACK, curses_lib=curses):
         global _COLOR_UID
         self.COLOR_UID = _COLOR_UID
         _COLOR_UID += 1
         self._fg = fg
         self._bg = bg
+        self._curses = curses_lib
         self.flush()
 
     def change_color(self, fg=None, bg=None, flush=True):
@@ -26,7 +27,7 @@ class Color(object):
     def flush(self):
         logging.error('Assigning %d, %d, %d',
                       self.COLOR_UID, self._fg, self._bg)
-        curses.init_pair(self.COLOR_UID, self._fg, self._bg)
+        self._curses.init_pair(self.COLOR_UID, self._fg, self._bg)
 
 
 LIGHT_GRAY = 237

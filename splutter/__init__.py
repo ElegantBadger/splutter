@@ -11,28 +11,28 @@ from splutter.art import Border
 ESCDELAY = '25'
 
 
-def init():
+def init(curses_lib=curses):
     os.environ.setdefault('ESCDELAY', ESCDELAY)
-    screen = curses.initscr()
-    curses.noecho()
-    curses.cbreak()
+    screen = curses_lib.initscr()
+    curses_lib.noecho()
+    curses_lib.cbreak()
     screen.keypad(1)
-    curses.start_color()
+    curses_lib.start_color()
     screen.nodelay(1)
     return Window(screen)
 
 
-def cleanup(window):
-    curses.nocbreak()
+def cleanup(window, curses_lib=curses):
+    curses_lib.nocbreak()
     window.curses_window.keypad(0)
-    curses.echo()
-    curses.endwin()
+    curses_lib.echo()
+    curses_lib.endwin()
 
 
 @contextmanager
-def splutter_window():
+def splutter_window(curses_lib=curses):
     try:
-        screen = init()
+        screen = init(curses_lib)
         yield screen
     finally:
         close_reason = None

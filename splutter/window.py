@@ -9,10 +9,11 @@ _PRINTABLE_SET = set(string.printable)
 
 
 class Window(object):
-    def __init__(self, window, default_color=None):
+    def __init__(self, window, default_color=None, curses_lib=curses):
         self._window = window
         if default_color is None:
             default_color = Color()
+        self._curses = curses_lib
         self._close_reason = None
         self._color = None
         self.default_color = default_color
@@ -43,13 +44,13 @@ class Window(object):
     def add_string(self, x, y, string, color=None):
         if color is None:
             color = self._color
-        attr = curses.color_pair(color.COLOR_UID)
+        attr = self._curses.color_pair(color.COLOR_UID)
         self._window.addstr(y, x, string, attr)
 
     def add_char(self, x, y, char, color=None):
         if color is None:
             color = self._color
-        attr = curses.color_pair(color.COLOR_UID)
+        attr = self._curses.color_pair(color.COLOR_UID)
         self._window.addch(y, x, char, attr)
 
     def _create_event_from_code(self, code):
